@@ -80,6 +80,16 @@ bool equals(std::vector<T> reference_data, boost::shared_ptr<ColumnBaseTyped<T> 
 	return true;
 }
 
+/*
+ * Hier werden die tests ausgeführt.
+ * col is filled with example (reference) data.
+ * col_new is empty and is tested, and should look like col, after certian funcions are called when functions work as expected.
+ *
+ * Tests:
+ * 1. CopyContructor
+ * 2. Update
+ * 3.
+ */
 template<class T>
 bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<ColumnBaseTyped<T> > col_new, std::vector<T>& reference_data) {
 	/****** BASIC INSERT TEST ******/
@@ -117,6 +127,7 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 	}	
 	std::cout << "SUCCESS"<< std::endl;
 	/****** UPDATE TEST ******/
+	//put random value at random valid index
 	TID tid = rand() % 100;
 	T new_value = get_rand_value<T>();
 	std::cout << "UPDATE TEST: Update value on Position '" << tid << "' to new value '" << new_value << "'..."; // << std::endl;
@@ -131,6 +142,7 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 	}
 	std::cout << "SUCCESS"<< std::endl;
 	/****** DELETE TEST ******/
+	//delete value at random index
 	{
 		TID tid = rand() % 100;
 
@@ -147,6 +159,7 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 		std::cout << "SUCCESS"<< std::endl;
 	}
 	/****** STORE AND LOAD TEST ******/
+	//
 	{
 		std::cout << "STORE AND LOAD TEST: store column data on disc and load it..."; // << std::endl;
 		col->store("data/");
@@ -158,6 +171,7 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 		}
 
 		//boost::shared_ptr<Column<int> > col2 (new Column<int>("int column",INT));
+		//lädt automatisch die richtige example column aus data/
 		col_new->load("data/");
 
 		if (!equals(reference_data, col_new)) {
@@ -208,6 +222,14 @@ std::string  getAttributeString<std::string>(){
     return "string column";
 }
 
+/*
+ * Assume ValueType is String and ColumnType is dictionary_compressed_column
+ * Creates two dictionary_compressed_column with String values. (The only value type accepted by my impl dictionary_compressed_column)
+ * Gib der Table name der zum Typ passt ("string-column").Gib Table den richtigen enum attribute type STRING.
+ * Füll Col1 mit random example data.
+ * call test_column mit noch leerer col2 und test data filled col1.
+ *
+ */
 template<template<typename> class ColumnType, typename ValueType>
 bool unittest() {
 	std::cout << "RUN Unittest for Column with BaseType ColumnBaseTyped<int> >" << std::endl;

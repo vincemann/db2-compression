@@ -21,6 +21,7 @@ namespace CoGaDB{
 		return name_;
 	}
 
+	//factory method that creates ColumnPtr of specified enum Type (float, string...) with given name
 	const ColumnPtr createColumn(AttributeType type, const std::string& name){
 
 	ColumnPtr ptr;
