@@ -152,6 +152,8 @@ class ColumnBase{
 //	Table& table_;
 };
 
+
+//some typedefs
 /*! \brief makes a smart pointer to a ColumnBase Object visible in the namespace*/
 typedef ColumnBase::ColumnPtr ColumnPtr;
 

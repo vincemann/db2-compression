@@ -6,12 +6,13 @@
 #pragma once
 
 #include <core/compressed_column.hpp>
+#include <unordered_map>
 
 namespace CoGaDB{
 	
 
 /*!
- *  \brief     This class represents a dictionary compressed column with type T, is the base class for all compressed typed column classes.
+ *  \brief     This class represents a dictionary compressed column with type T, is the base class for all compressed typed column classes. (is it?)
  */	
 template<class T>
 class DictionaryCompressedColumn : public CompressedColumn<T>{
@@ -48,37 +49,52 @@ class DictionaryCompressedColumn : public CompressedColumn<T>{
 	
 	virtual T& operator[](const int index);
 
+    protected:
+
+    std::unordered_map<unsigned int,T> dictionary_;
+    unsigned int last_key_;
 };
 
 
 /***************** Start of Implementation Section ******************/
 
-	
-	template<class T>
-	DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string& name, AttributeType db_type) : CompressedColumn<T>(name, db_type){
 
+    //call super constructor & init empty dictionary
+	template<class T>
+	DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string& name, AttributeType db_type) : CompressedColumn<T>(name, db_type),dictionary_(){
+        this->last_key_=0;
 	}
 
 	template<class T>
-	DictionaryCompressedColumn<T>::~DictionaryCompressedColumn(){
-
+	DictionaryCompressedColumn<T>::~DictionaryCompressedColumn(),dictionary_(){
+        this->last_key_=0;
 	}
 
 	template<class T>
-	bool DictionaryCompressedColumn<T>::insert(const boost::any&){
-
+	bool DictionaryCompressedColumn<T>::insert(const boost::any& new_value){
+        if(new_value.empty()) return false;
+        if(typeid(T)==new_value.type()){
+            T value = boost::any_cast<T>(new_value);
+            return this->insert(value);
+        }
 		return false;
 	}
 
 	template<class T>
-	bool DictionaryCompressedColumn<T>::insert(const T&){
-		return false;
+	bool DictionaryCompressedColumn<T>::insert(const T& value){
+	    if(dictionary_.find( key )->second == value)
+        unsigned int key = this->last_key_ +1;
+        if(dictionary_.insert( std::make_pair( key, value ) ).second )){
+            // only update last key if insert was not already present
+            this->last_key_=key;
+        }
+        return true;
 	}
 
 	template <typename T> 
 	template <typename InputIterator>
 	bool DictionaryCompressedColumn<T>::insert(InputIterator , InputIterator ){
-		
+		//i dont rly know about this one
 		return true;
 	}
 

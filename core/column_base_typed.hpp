@@ -94,7 +94,7 @@ class ColumnBaseTyped : public ColumnBase{
 	inline bool operator==(ColumnBaseTyped<T>& column);
 };
 
-
+//constructors just call super(...)
 	template<class T>
 	ColumnBaseTyped<T>::ColumnBaseTyped(const std::string& name, AttributeType db_type) : ColumnBase(name,db_type){
 
@@ -105,6 +105,7 @@ class ColumnBaseTyped : public ColumnBase{
 
 	}
 
+//static methods
 template<class T>
 const std::type_info& ColumnBaseTyped<T>::type() const throw(){
 	return typeid(T);
