@@ -11,6 +11,7 @@
 //CoGaDB includes
 #include <core/global_definitions.hpp>
 
+//hier werden types definiert einfach nur als Kurzschreibweisen von bekannten generischen types
 namespace CoGaDB{
 /* \brief a PositionList is an STL vector of TID values*/
 typedef std::vector<TID> PositionList;

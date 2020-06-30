@@ -86,9 +86,11 @@ bool equals(std::vector<T> reference_data, boost::shared_ptr<ColumnBaseTyped<T> 
  * col_new is empty and is tested, and should look like col, after certian funcions are called when functions work as expected.
  *
  * Tests:
+ * 0. Test if col (which is also my impl) was filled properly before calling this method via insert calls
  * 1. CopyContructor
  * 2. Update
- * 3.
+ * 3. Delete
+ * 4. Store/Load
  */
 template<class T>
 bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<ColumnBaseTyped<T> > col_new, std::vector<T>& reference_data) {

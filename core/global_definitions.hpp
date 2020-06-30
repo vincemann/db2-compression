@@ -43,6 +43,7 @@ enum DebugMode{quiet=1,
 //					verbose=1,
 //					debug=1};
 
+//hier werden Typen Definiert einfach nur als Kurzscheibweise oder besseren Beschreibungen
 typedef unsigned int TID;
 
 typedef std::pair<TID,TID> TID_Pair;
