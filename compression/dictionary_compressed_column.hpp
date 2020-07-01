@@ -135,19 +135,17 @@ namespace CoGaDB {
 
     template<class T>
     void DictionaryCompressedColumn<T>::print() const throw() {
-
+        this->column_->print();
     }
 
     template<class T>
     size_t DictionaryCompressedColumn<T>::size() const throw() {
-
-        return 0;
+        return this->column_->size();
     }
 
     template<class T>
     const ColumnPtr DictionaryCompressedColumn<T>::copy() const {
-
-        return ColumnPtr();
+        return this->column_->copy();
     }
 
     template<class T>
@@ -186,14 +184,13 @@ namespace CoGaDB {
     }
 
     template<class T>
-    T &DictionaryCompressedColumn<T>::operator[](const int) {
-        static T t;
-        return t;
+    T &DictionaryCompressedColumn<T>::operator[](const int index) {
+        return this->column_[index];
     }
 
     template<class T>
     unsigned int DictionaryCompressedColumn<T>::getSizeinBytes() const throw() {
-        return 0; //return values_.capacity()*sizeof(T);
+        return this->column_->getSizeinBytes(); //return values_.capacity()*sizeof(T);
     }
 
 /***************** End of Implementation Section ******************/
