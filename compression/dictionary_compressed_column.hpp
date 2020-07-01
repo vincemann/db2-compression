@@ -76,7 +76,7 @@ namespace CoGaDB {
     DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type)
             : CompressedColumn<T>(name, db_type), insert_dict_(),at_dict_() {
         this->last_key_ = 0;
-        this->column_ = new Column(name,db_type);
+        this->column_ = new Column(name,INT);
     }
 
     template<class T>
@@ -100,11 +100,14 @@ namespace CoGaDB {
         int knownKey = insert_dict_.at(value);
         int finalKey = 0;
         if (knownKey!=0) {
+            std::cout << "Key for value: " << value << " is already known: " << knownKey <<   std::endl;
             //kennen wert schon
             finalKey=knownKey;
         } else {
             //lernen wert
             finalKey = this->last_key_ + 1;
+            this->last_key_ = this->last_key_ + 1;
+            std::cout << "Key for value: " << value << " is not already known. Insert new key (lastkey +1) in dicts: " << finalKey <<   std::endl;
             insert_dict_.insert(std::make_pair(value,finalKey));
             at_dict_.insert(std::make_pair(finalKey, value));
         }
@@ -115,6 +118,7 @@ namespace CoGaDB {
     template<typename InputIterator>
     bool DictionaryCompressedColumn<T>::insert(InputIterator start, InputIterator end) {
         //i dont rly know about this one
+        std::cout << "weird iterator insert function called " << std::endl;
         return true;
     }
 
@@ -125,71 +129,84 @@ namespace CoGaDB {
             //valid key found
             T value = at_dict_.at(key);
             if(value){
+                std::cout << "Value found for dict key: " << key << " -> " << value << std::endl;
                 return boost::any(value);
             }else{
                 std::cout << "No Value found for dict key " << key << std::endl;
             }
+        }else{
+            std::cout << "No Key found in column for id " << id << std::endl;
         }
         return boost::any();
     }
 
     template<class T>
     void DictionaryCompressedColumn<T>::print() const throw() {
+        //todo add compression logic
         this->column_->print();
     }
 
     template<class T>
     size_t DictionaryCompressedColumn<T>::size() const throw() {
+        //todo add dict sizes
         return this->column_->size();
     }
 
     template<class T>
     const ColumnPtr DictionaryCompressedColumn<T>::copy() const {
+        //todo point must point to this and not to proxied object otherwise kompression gets lost
         return this->column_->copy();
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::update(TID, const boost::any &) {
-        return false;
+    bool DictionaryCompressedColumn<T>::update(TID id, const boost::any &patch) {
+        //todo add compression logic
+        return this->column_->update(id,patch);
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::update(PositionListPtr, const boost::any &) {
-        return false;
+    bool DictionaryCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &patch) {
+        //todo add compression logic
+        return this->column_->update(ptr,patch);
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::remove(TID) {
-        return false;
+    bool DictionaryCompressedColumn<T>::remove(TID id) {
+        //todo add compression logic
+        return this->column_->remove(id);
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::remove(PositionListPtr) {
-        return false;
+    bool DictionaryCompressedColumn<T>::remove(PositionListPtr ptr) {
+        //todo add compression logic
+        return this->column_->remove(ptr);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::clearContent() {
-        return false;
+        //todo add compression logic
+        return this->column_->clearContent();
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::store(const std::string &) {
-        return false;
+    bool DictionaryCompressedColumn<T>::store(const std::string path&) {
+        return this->column_->store(path);
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::load(const std::string &) {
-        return false;
+    bool DictionaryCompressedColumn<T>::load(const std::string &path) {
+        return this->column_->load(path);
     }
 
     template<class T>
     T &DictionaryCompressedColumn<T>::operator[](const int index) {
+        //todo add compression logic -> this->column_[index] will return key -> return value from dict.
         return this->column_[index];
     }
 
     template<class T>
     unsigned int DictionaryCompressedColumn<T>::getSizeinBytes() const throw() {
+        //todo add dict size
         return this->column_->getSizeinBytes(); //return values_.capacity()*sizeof(T);
     }
 

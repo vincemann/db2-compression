@@ -29,7 +29,7 @@ int main(){
 	}
 	std::cout << "Unitests Passed!" << std::endl;
 
-	if(!unittest<Column ,std::string>()){
+	if(!unittest<DictionaryCompressedColumn ,std::string>()){
 		std::cout << "At least one Unittest Failed!" << std::endl;	
 		return -1;	
 	}
