@@ -16,7 +16,7 @@ namespace CoGaDB{
  *  \copyright GNU LESSER GENERAL PUBLIC LICENSE - Version 3, http://www.gnu.org/licenses/lgpl-3.0.txt
  */	
 template<class T>
-class CompressedColumn : public Column<T>{
+class CompressedColumn : public ColumnBaseTyped<T>{
 	public:
 	/***************** constructors and destructor *****************/
 	CompressedColumn(const std::string& name, AttributeType db_type);
