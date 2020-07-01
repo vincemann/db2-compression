@@ -6,6 +6,7 @@
 #pragma once
 
 #include <core/compressed_column.hpp>
+#include <core/column.hpp>
 #include <unordered_map>
 
 namespace CoGaDB {
@@ -64,7 +65,7 @@ namespace CoGaDB {
         std::unordered_map<T, int> insert_dict_;
         std::unordered_map<int, T> at_dict_;
         int last_key_;
-        Column<int> column_;
+        Column<int>* column_;
     };
 
 
@@ -74,13 +75,17 @@ namespace CoGaDB {
     //call super constructor & init empty dictionary
     template<class T>
     DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type)
-            : CompressedColumn<T>(name, db_type), insert_dict_(),at_dict_() {
+            : CompressedColumn<T>(name, db_type) {
+        this->insert_dict_ = std::unordered_map<T, int>();
+        this->at_dict_ = std::unordered_map<int, T>();
         this->last_key_ = 0;
         this->column_ = new Column(name,INT);
     }
 
     template<class T>
-    DictionaryCompressedColumn<T>::~DictionaryCompressedColumn(), insert_dict_(),at_dict_() {
+    DictionaryCompressedColumn<T>::~DictionaryCompressedColumn() {
+        this->insert_dict_ = std::unordered_map<T, int>();
+        this->at_dict_ = std::unordered_map<int, T>();
         this->last_key_ = 0;
         this->column_ = new Column();
     }
@@ -111,7 +116,7 @@ namespace CoGaDB {
             insert_dict_.insert(std::make_pair(value,finalKey));
             at_dict_.insert(std::make_pair(finalKey, value));
         }
-        return this->column_->insert(key);
+        return this->column_->insert(finalKey);
     }
 
     template<typename T>
@@ -124,9 +129,11 @@ namespace CoGaDB {
 
     template<class T>
     const boost::any DictionaryCompressedColumn<T>::get(TID id) {
-        int key = boost::any_cast<int>(this->column_->get(id));
-        if(!key.empty()){
+        boost::any boxedKey = this->column_->get(id);
+
+        if(!boxedKey.empty()){
             //valid key found
+            int key = boost::any_cast<int>(boxedKey);
             T value = at_dict_.at(key);
             if(value){
                 std::cout << "Value found for dict key: " << key << " -> " << value << std::endl;
@@ -189,7 +196,7 @@ namespace CoGaDB {
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::store(const std::string path&) {
+    bool DictionaryCompressedColumn<T>::store(const std::string &path) {
         return this->column_->store(path);
     }
 
