@@ -166,7 +166,7 @@ namespace CoGaDB {
     template<class T>
     const ColumnPtr DictionaryCompressedColumn<T>::copy() const {
         //todo point must point to this and not to proxied object otherwise kompression gets lost
-        return this->column_.copy();
+        return ColumnPtr(new DictionaryCompressedColumn<T>(*this));
     }
 
     template<class T>
