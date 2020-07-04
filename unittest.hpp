@@ -234,7 +234,8 @@ std::string  getAttributeString<std::string>(){
  */
 template<template<typename> class ColumnType, typename ValueType>
 bool unittest() {
-	std::cout << "RUN Unittest for Column with BaseType ColumnBaseTyped<int> >" << std::endl;
+
+	std::cout << "RUN Unittest for Column with BaseType ColumnBaseTyped<?>" << std::endl;
         
          boost::shared_ptr<ColumnType<ValueType> > col_one (new ColumnType<ValueType>(getAttributeString<ValueType>(),getAttributeType<ValueType>()));
          boost::shared_ptr<ColumnType<ValueType> > col_two (new ColumnType<ValueType>(getAttributeString<ValueType>(),getAttributeType<ValueType>()));

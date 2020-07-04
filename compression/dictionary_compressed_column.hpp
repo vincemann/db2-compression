@@ -101,9 +101,14 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::insert(const T &value) {
-        int knownKey = insert_dict_.at(value);
+        std::cout << "Inserting value: " << value <<   std::endl;
+        auto it = insert_dict_.find(value);
+        int knownKey = -1;
+        if (it != insert_dict_.end()) {
+            knownKey = it->second;
+        }
         int finalKey = 0;
-        if (knownKey!=0) {
+        if (knownKey!=-1) {
             std::cout << "Key for value: " << value << " is already known: " << knownKey <<   std::endl;
             //kennen wert schon
             finalKey=knownKey;
