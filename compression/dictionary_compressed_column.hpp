@@ -171,13 +171,11 @@ namespace CoGaDB {
 
     template<class T>
     void DictionaryCompressedColumn<T>::print() const throw() {
-        //todo add compression logic
         this->column_.print();
     }
 
     template<class T>
     size_t DictionaryCompressedColumn<T>::size() const throw() {
-        //todo add dict sizes
         return this->column_.size();
     }
 
@@ -206,19 +204,19 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(TID id) {
-        //todo add compression logic
         return this->column_.remove(id);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(PositionListPtr ptr) {
-        //todo add compression logic
         return this->column_.remove(ptr);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::clearContent() {
-        //todo add compression logic
+        this->insert_dict_.clear();
+        this->at_dict_.clear();
+        this->last_key_=0;
         return this->column_.clearContent();
     }
 
@@ -234,14 +232,14 @@ namespace CoGaDB {
 
     template<class T>
     T &DictionaryCompressedColumn<T>::operator[](const int index) {
-        //todo add compression logic -> this->column_[index] will return key -> return value from dict.
+        //std::cout << "Array operator called with index: " << index << std::endl;
         int& key = this->column_[index];
+        //std::cout << "Found key for this index: " << key << std::endl;
         return at_dict_.at(key);
     }
 
     template<class T>
     unsigned int DictionaryCompressedColumn<T>::getSizeinBytes() const throw() {
-        //todo add dict size
         return this->column_.getSizeinBytes(); //return values_.capacity()*sizeof(T);
     }
 
