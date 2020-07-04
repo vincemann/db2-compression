@@ -44,7 +44,7 @@ class Column : public ColumnBaseTyped<T>{
 
 	std::vector<T>& getContent();
 
-	private:
+	protected:
 
 		struct Type_TID_Comparator {
   			inline bool operator() (std::pair<T,TID> i, std::pair<T,TID> j) { return (i.first<j.first);}

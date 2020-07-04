@@ -7,7 +7,6 @@
 
 #include <core/compressed_column.hpp>
 #include <core/column.hpp>
-#include <unordered_map>
 
 namespace CoGaDB {
 
@@ -23,6 +22,10 @@ namespace CoGaDB {
         DictionaryCompressedColumn(const std::string &name, AttributeType db_type);
 
         virtual ~DictionaryCompressedColumn();
+
+        virtual void serialize(boost::archive::binary_oarchive& out);
+
+        virtual void deserialize(boost::archive::binary_iarchive& in);
 
         virtual bool insert(const boost::any &new_Value);
 
@@ -65,8 +68,8 @@ namespace CoGaDB {
         virtual T &operator[](const int index);
 
     public:
-        std::unordered_map<T, int> insert_dict_;
-        std::unordered_map<int, T> at_dict_;
+        std::map<T, int> insert_dict_;
+        std::map<int, T> at_dict_;
         int last_key_;
         Column<int> column_;
     };
@@ -79,16 +82,16 @@ namespace CoGaDB {
     template<class T>
     DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type): CompressedColumn<T>(name, db_type)
             ,insert_dict_(),at_dict_(),last_key_(),column_(name,AttributeType::INT) {
-        this->insert_dict_ = std::unordered_map<T, int>();
-        this->at_dict_ = std::unordered_map<int, T>();
+        this->insert_dict_ = std::map<T, int>();
+        this->at_dict_ = std::map<int, T>();
         this->last_key_ = 0;
         this->column_ = Column<int>(name,AttributeType::INT);
     }
 
     template<class T>
     DictionaryCompressedColumn<T>::~DictionaryCompressedColumn()  {
-        //this->insert_dict_ = std::unordered_map<T, int>();
-        //this->at_dict_ = std::unordered_map<int, T>();
+        //this->insert_dict_ = std::map<T, int>();
+        //this->at_dict_ = std::map<int, T>();
         //this->last_key_ = 0;
         //this->column_ = Column<int>();
     }
@@ -220,15 +223,81 @@ namespace CoGaDB {
         return this->column_.clearContent();
     }
 
+
+    //map serialize and deserialize
     template<class T>
-    bool DictionaryCompressedColumn<T>::store(const std::string &path) {
-        return this->column_.store(path);
+    void DictionaryCompressedColumn<T>::serialize(boost::archive::binary_oarchive& out) {
+        out << this->insert_dict_.size();
+        for (auto const& p: insert_dict_) { out << p.first << p.second; }
+        out << this->at_dict_.size();
+        for (auto const& p: at_dict_) { out << p.first << p.second; }
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::load(const std::string &path) {
-        return this->column_.load(path);
+    void DictionaryCompressedColumn<T>::deserialize(boost::archive::binary_iarchive& in) {
+        size_t size = 0;
+        in >> size;
+
+        for (size_t i = 0; i != size; ++i) {
+            T key;
+            int value;
+            in >> key >> value;
+            this->insert_dict_[key] = value;
+        }
+
+        size_t size2 = 0;
+        in >> size2;
+
+        for (size_t i = 0; i != size; ++i) {
+            int key;
+            T value;
+            in >> key >> value;
+            this->at_dict_[key] = value;
+        }
+
     }
+
+    template<class T>
+    bool DictionaryCompressedColumn<T>::store(const std::string &path_) {
+        //return this->column_.store(path);
+        //string path("data/");
+        std::string path(path_);
+        path += "/";
+        path += this->name_+"-meta";
+        //std::cout << "Writing Column " << this->getName() << " to File " << path << std::endl;
+        std::ofstream outfile (path.c_str(),std::ios_base::binary | std::ios_base::out);
+        boost::archive::binary_oarchive oa(outfile);
+
+        oa << last_key_;
+        serialize(oa);
+
+
+        outfile.flush();
+        outfile.close();
+        return this->column_.store(path_);
+    }
+
+    template<class T>
+    bool DictionaryCompressedColumn<T>::load(const std::string &path_) {
+        std::string path(path_);
+        //std::cout << "Loading column '" << this->name_ << "' from path '" << path << "'..." << std::endl;
+        //string path("data/");
+        path += "/";
+        path += this->name_+"-meta";
+
+        //std::cout << "Opening File '" << path << "'..." << std::endl;
+        std::ifstream infile (path.c_str(),std::ios_base::binary | std::ios_base::in);
+        boost::archive::binary_iarchive ia(infile);
+
+        ia >> last_key_;
+        deserialize(ia);
+
+        infile.close();
+
+
+        return this->column_.load(path_);
+    }
+
 
     template<class T>
     T &DictionaryCompressedColumn<T>::operator[](const int index) {
