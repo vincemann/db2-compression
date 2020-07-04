@@ -60,12 +60,11 @@ namespace CoGaDB {
 
         virtual T &operator[](const int index);
 
-    protected:
-
+    public:
         std::unordered_map<T, int> insert_dict_;
         std::unordered_map<int, T> at_dict_;
         int last_key_;
-        Column<int>* column_;
+        Column<int> column_;
     };
 
 
@@ -74,20 +73,20 @@ namespace CoGaDB {
 
     //call super constructor & init empty dictionary
     template<class T>
-    DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type)
-            : CompressedColumn<T>(name, db_type) {
+    DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type): CompressedColumn<T>(name, db_type)
+            ,insert_dict_(),at_dict_(),last_key_(),column_(name,AttributeType::INT) {
         this->insert_dict_ = std::unordered_map<T, int>();
         this->at_dict_ = std::unordered_map<int, T>();
         this->last_key_ = 0;
-        this->column_ = new Column(name,INT);
+        this->column_ = Column<int>(name,AttributeType::INT);
     }
 
     template<class T>
-    DictionaryCompressedColumn<T>::~DictionaryCompressedColumn() {
-        this->insert_dict_ = std::unordered_map<T, int>();
-        this->at_dict_ = std::unordered_map<int, T>();
-        this->last_key_ = 0;
-        this->column_ = new Column();
+    DictionaryCompressedColumn<T>::~DictionaryCompressedColumn()  {
+        //this->insert_dict_ = std::unordered_map<T, int>();
+        //this->at_dict_ = std::unordered_map<int, T>();
+        //this->last_key_ = 0;
+        //this->column_ = Column<int>();
     }
 
     template<class T>
@@ -116,7 +115,7 @@ namespace CoGaDB {
             insert_dict_.insert(std::make_pair(value,finalKey));
             at_dict_.insert(std::make_pair(finalKey, value));
         }
-        return this->column_->insert(finalKey);
+        return this->column_.insert(finalKey);
     }
 
     template<typename T>
@@ -129,18 +128,18 @@ namespace CoGaDB {
 
     template<class T>
     const boost::any DictionaryCompressedColumn<T>::get(TID id) {
-        boost::any boxedKey = this->column_->get(id);
+        boost::any boxedKey = this->column_.get(id);
 
         if(!boxedKey.empty()){
             //valid key found
             int key = boost::any_cast<int>(boxedKey);
             T value = at_dict_.at(key);
-            if(value){
-                std::cout << "Value found for dict key: " << key << " -> " << value << std::endl;
-                return boost::any(value);
-            }else{
-                std::cout << "No Value found for dict key " << key << std::endl;
-            }
+            //if(value!=null){
+            std::cout << "Value found for dict key: " << key << " -> " << value << std::endl;
+            return boost::any(value);
+            //}else{
+              //  std::cout << "No Value found for dict key " << key << std::endl;
+            //}
         }else{
             std::cout << "No Key found in column for id " << id << std::endl;
         }
@@ -150,71 +149,72 @@ namespace CoGaDB {
     template<class T>
     void DictionaryCompressedColumn<T>::print() const throw() {
         //todo add compression logic
-        this->column_->print();
+        this->column_.print();
     }
 
     template<class T>
     size_t DictionaryCompressedColumn<T>::size() const throw() {
         //todo add dict sizes
-        return this->column_->size();
+        return this->column_.size();
     }
 
     template<class T>
     const ColumnPtr DictionaryCompressedColumn<T>::copy() const {
         //todo point must point to this and not to proxied object otherwise kompression gets lost
-        return this->column_->copy();
+        return this->column_.copy();
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::update(TID id, const boost::any &patch) {
         //todo add compression logic
-        return this->column_->update(id,patch);
+        return this->column_.update(id,patch);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &patch) {
         //todo add compression logic
-        return this->column_->update(ptr,patch);
+        return this->column_.update(ptr,patch);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(TID id) {
         //todo add compression logic
-        return this->column_->remove(id);
+        return this->column_.remove(id);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(PositionListPtr ptr) {
         //todo add compression logic
-        return this->column_->remove(ptr);
+        return this->column_.remove(ptr);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::clearContent() {
         //todo add compression logic
-        return this->column_->clearContent();
+        return this->column_.clearContent();
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::store(const std::string &path) {
-        return this->column_->store(path);
+        return this->column_.store(path);
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::load(const std::string &path) {
-        return this->column_->load(path);
+        return this->column_.load(path);
     }
 
     template<class T>
     T &DictionaryCompressedColumn<T>::operator[](const int index) {
         //todo add compression logic -> this->column_[index] will return key -> return value from dict.
-        return this->column_[index];
+        int& key = this->column_[index];
+        return at_dict_.at(key);
     }
 
     template<class T>
     unsigned int DictionaryCompressedColumn<T>::getSizeinBytes() const throw() {
         //todo add dict size
-        return this->column_->getSizeinBytes(); //return values_.capacity()*sizeof(T);
+        return this->column_.getSizeinBytes(); //return values_.capacity()*sizeof(T);
     }
 
 /***************** End of Implementation Section ******************/
