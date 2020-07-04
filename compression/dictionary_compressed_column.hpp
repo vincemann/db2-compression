@@ -28,6 +28,10 @@ namespace CoGaDB {
 
         virtual bool insert(const T &new_value);
 
+        virtual bool isOfTypeT(const boost::any &new_value);
+
+        virtual int getKeyFor(const T &value);
+
         template<typename InputIterator>
         bool insert(InputIterator first, InputIterator last);
 
@@ -91,10 +95,19 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::insert(const boost::any &new_value) {
+        if(isOfTypeT(new_value)){
+            T value = boost::any_cast<T>(new_value);
+            return this->column_.insert(value);
+        }else{
+            return false;
+        }
+    }
+
+    template<class T>
+    bool DictionaryCompressedColumn<T>::isOfTypeT(const boost::any &new_value){
         if (new_value.empty()) return false;
         if (typeid(T) == new_value.type()) {
-            T value = boost::any_cast<T>(new_value);
-            return this->insert(value);
+            return true;
         }
         return false;
     }
@@ -102,6 +115,11 @@ namespace CoGaDB {
     template<class T>
     bool DictionaryCompressedColumn<T>::insert(const T &value) {
         std::cout << "Inserting value: " << value <<   std::endl;
+        return this->column_.insert(getKeyFor(value));
+    }
+
+    template<class T>
+    int DictionaryCompressedColumn<T>::getKeyFor(const T &value){
         auto it = insert_dict_.find(value);
         int knownKey = -1;
         if (it != insert_dict_.end()) {
@@ -120,7 +138,7 @@ namespace CoGaDB {
             insert_dict_.insert(std::make_pair(value,finalKey));
             at_dict_.insert(std::make_pair(finalKey, value));
         }
-        return this->column_.insert(finalKey);
+        return finalKey;
     }
 
     template<typename T>
@@ -133,13 +151,13 @@ namespace CoGaDB {
 
     template<class T>
     const boost::any DictionaryCompressedColumn<T>::get(TID id) {
-        boost::any boxedKey = this->column_.get(id);
-
-        if(!boxedKey.empty()){
+        boost::any anyKey = this->column_.get(id);
+        if(!anyKey.empty()){
             //valid key found
-            int key = boost::any_cast<int>(boxedKey);
+            int key = boost::any_cast<int>(anyKey);
             T value = at_dict_.at(key);
             //if(value!=null){
+
             std::cout << "Value found for dict key: " << key << " -> " << value << std::endl;
             return boost::any(value);
             //}else{
@@ -165,19 +183,24 @@ namespace CoGaDB {
 
     template<class T>
     const ColumnPtr DictionaryCompressedColumn<T>::copy() const {
-        //todo point must point to this and not to proxied object otherwise kompression gets lost
         return ColumnPtr(new DictionaryCompressedColumn<T>(*this));
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::update(TID id, const boost::any &patch) {
-        //todo add compression logic
-        return this->column_.update(id,patch);
+        if(isOfTypeT(patch)){
+            T value = boost::any_cast<T>(patch);
+            int key = this->getKeyFor(value);
+            return this->column_.update(id,key);
+        }else{
+            return false;
+        }
     }
 
     template<class T>
     bool DictionaryCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &patch) {
         //todo add compression logic
+        std::cout << "weird iterator update function called " << std::endl;
         return this->column_.update(ptr,patch);
     }
 
