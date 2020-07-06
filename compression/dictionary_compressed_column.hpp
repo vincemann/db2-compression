@@ -33,7 +33,7 @@ namespace CoGaDB {
 
         virtual bool isOfTypeT(const boost::any &new_value);
 
-        virtual int getKeyFor(const T &value);
+        virtual int getKeyFor(const T &value, bool* known);
 
         template<typename InputIterator>
         bool insert(InputIterator first, InputIterator last);
@@ -70,6 +70,7 @@ namespace CoGaDB {
     public:
         std::map<T, int> insert_dict_;
         std::map<int, T> at_dict_;
+        std::map<int, int> value_count_dict_;
         int last_key_;
         Column<int> column_;
     };
@@ -81,9 +82,10 @@ namespace CoGaDB {
     //call super constructor & init empty dictionary
     template<class T>
     DictionaryCompressedColumn<T>::DictionaryCompressedColumn(const std::string &name, AttributeType db_type): CompressedColumn<T>(name, db_type)
-            ,insert_dict_(),at_dict_(),last_key_(),column_(name,AttributeType::INT) {
+            ,insert_dict_(),at_dict_(),value_count_dict_(),last_key_(),column_(name,AttributeType::INT) {
         this->insert_dict_ = std::map<T, int>();
         this->at_dict_ = std::map<int, T>();
+        this->value_count_dict_ = std::map<int, int>();
         this->last_key_ = 0;
         this->column_ = Column<int>(name,AttributeType::INT);
     }
@@ -100,7 +102,7 @@ namespace CoGaDB {
     bool DictionaryCompressedColumn<T>::insert(const boost::any &new_value) {
         if(isOfTypeT(new_value)){
             T value = boost::any_cast<T>(new_value);
-            return this->column_.insert(value);
+            return this->insert(value);
         }else{
             return false;
         }
@@ -117,31 +119,39 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::insert(const T &value) {
-        std::cout << "Inserting value: " << value <<   std::endl;
-        return this->column_.insert(getKeyFor(value));
+        bool* known = new bool;
+        *known = 0;
+        int key = getKeyFor(value,known);
+        bool inserted = this->column_.insert(key);
+        //increment value count for already known value
+        if(inserted && known){
+            this->value_count_dict_[key]=this->value_count_dict_[key]+1;
+        }
+        return inserted;
     }
 
     template<class T>
-    int DictionaryCompressedColumn<T>::getKeyFor(const T &value){
+    int DictionaryCompressedColumn<T>::getKeyFor(const T &value, bool* known){
         auto it = insert_dict_.find(value);
-        int knownKey = -1;
+        int key = -1;
         if (it != insert_dict_.end()) {
-            knownKey = it->second;
+            key = it->second;
         }
-        int finalKey = 0;
-        if (knownKey!=-1) {
-            std::cout << "Key for value: " << value << " is already known: " << knownKey <<   std::endl;
-            //kennen wert schon
-            finalKey=knownKey;
+        if (key!=-1) {
+            std::cout << "Key for value: " << value << " is already known: " << key <<   std::endl;
+            *known = 1;
+            //we already know the value
         } else {
+            *known = 0;
             //lernen wert
-            finalKey = this->last_key_ + 1;
+            key = this->last_key_ + 1;
             this->last_key_ = this->last_key_ + 1;
-            std::cout << "Key for value: " << value << " is not already known. Insert new key (lastkey +1) in dicts: " << finalKey <<   std::endl;
-            insert_dict_.insert(std::make_pair(value,finalKey));
-            at_dict_.insert(std::make_pair(finalKey, value));
+            std::cout << "Key for value: " << value << " is not already known. Insert new key (lastkey +1) in dicts: " << key <<   std::endl;
+            insert_dict_.insert(std::make_pair(value,key));
+            at_dict_.insert(std::make_pair(key, value));
+            value_count_dict_.insert(std::make_pair(key, 1));
         }
-        return finalKey;
+        return key;
     }
 
     template<typename T>
@@ -194,8 +204,10 @@ namespace CoGaDB {
     template<class T>
     bool DictionaryCompressedColumn<T>::update(TID id, const boost::any &patch) {
         if(isOfTypeT(patch)){
+            bool* known = new bool;
+            *known = 0;
             T value = boost::any_cast<T>(patch);
-            int key = this->getKeyFor(value);
+            int key = this->getKeyFor(value,known);
             return this->column_.update(id,key);
         }else{
             return false;
@@ -215,6 +227,17 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(TID id) {
+        int key = this->column_[id];
+        int value_count = this->value_count_dict_[key];
+        if(value_count==1){
+            this->value_count_dict_.erase(key);
+            T val = this->at_dict_[key];
+            this->at_dict_.erase(key);
+            this->insert_dict_.erase(val);
+
+        }else{
+            this->value_count_dict_[key]=this->value_count_dict_[key]-1;
+        }
         return this->column_.remove(id);
     }
 

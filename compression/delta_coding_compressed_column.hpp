@@ -162,13 +162,11 @@ namespace CoGaDB {
 
         // write whole column
 
-        std::cout << std::endl;
+        //std::cout << std::endl;
 
-        for (long unsigned int i = 0; i < column_.size(); i++) {
-
-            std::cout << this->column_.getContent().at(i) << " , ";
-
-        }
+        //for (long unsigned int i = 0; i < column_.size(); i++) {
+        //  std::cout << this->column_.getContent().at(i) << " , ";
+        //}
 
         std::cout << std::endl << "decompressed : " << decompress(column_.size() - 1) << " id : " << column_.size() - 1
                   << std::endl;
@@ -231,7 +229,7 @@ namespace CoGaDB {
     template<class T>
 
     const boost::any DeltaCodingCompressedColumn<T>::get(TID id) {
-        std::cout << "return value from get : " << decompress(id) << std::endl;
+        //std::cout << "return value from get : " << decompress(id) << std::endl;
         return decompress(id);
     }
 
@@ -260,7 +258,7 @@ namespace CoGaDB {
 
     bool DeltaCodingCompressedColumn<T>::update(TID id, const boost::any &newBoostValue) {
         T newValue = boost::any_cast<T>(newBoostValue);
-        this->column_.print();
+        //this->column_.print();
         if (id == 0) {
 
             //update old first value with new first value
@@ -295,7 +293,7 @@ namespace CoGaDB {
             }
 
         }
-        this->column_.print();
+        //this->column_.print();
 
         return true;
 
@@ -370,9 +368,9 @@ namespace CoGaDB {
         std::ofstream outfile (path.c_str(),std::ios_base::binary | std::ios_base::out);
         boost::archive::binary_oarchive oa(outfile);
 
-        std::cout << "storing last_value_: " << last_value_ << std::endl;
-        std::cout << "before store: " << std::endl;
-        this->column_.print();
+        //std::cout << "storing last_value_: " << last_value_ << std::endl;
+        //std::cout << "before store: " << std::endl;
+        //this->column_.print();
         oa << last_value_;
 
         outfile.flush();
@@ -401,8 +399,8 @@ namespace CoGaDB {
 
 
         bool loaded  = this->column_.load(path_);
-        std::cout << "after load: " << std::endl;
-        this->column_.print();
+        //std::cout << "after load: " << std::endl;
+        //this->column_.print();
         return loaded;
     }
 
