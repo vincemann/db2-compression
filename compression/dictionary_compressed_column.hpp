@@ -147,9 +147,11 @@ namespace CoGaDB {
     template<typename T>
     template<typename InputIterator>
     bool DictionaryCompressedColumn<T>::insert(InputIterator start, InputIterator end) {
-        //i dont rly know about this one
-        std::cout << "weird iterator insert function called " << std::endl;
-        return true;
+        bool inserted = true;
+        for (auto it = start; it != end; ++it) {
+            inserted = insert(*it);
+        }
+        return inserted;
     }
 
     template<class T>
