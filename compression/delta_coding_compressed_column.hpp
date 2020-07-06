@@ -317,8 +317,23 @@ namespace CoGaDB {
 
     template<class T>
 
-    bool DeltaCodingCompressedColumn<T>::remove(TID) {
-        return false;
+    bool DeltaCodingCompressedColumn<T>::remove(TID id) {
+        if(id==0){
+            T decompressedSucc = boost::any_cast<T>(this->get(id + 1));
+            this->column_.getContent().erase(this->column_.getContent().begin()+0);
+            if(!this->column_.update(0,decompressedSucc)){
+                return false;
+            }
+        }else {
+            T decompressedPreceding = boost::any_cast<T>(this->get(id - 1));
+            T decompressedSucc = boost::any_cast<T>(this->get(id + 1));
+            T newSuccDelta =  decompressedSucc - decompressedPreceding;
+            this->column_.getContent().erase(this->column_.getContent().begin() + id);
+            if(this->column_.update(id, newSuccDelta)){
+                return false;
+            }
+        }
+        return true;
     }
 
 
