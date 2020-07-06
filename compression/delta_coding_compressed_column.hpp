@@ -44,7 +44,7 @@ public:
 
 
 
-	virtual T decompress(TID id);
+	virtual T& decompress(TID id);
 
 
 
@@ -224,17 +224,17 @@ public:
 
 	template<class T>
 
-	T DeltaCodingCompressedColumn<T>::decompress(TID id){
+	T& DeltaCodingCompressedColumn<T>::decompress(TID id){
 
 		std::vector<T> values = column_.getContent();
 
-		T result = 0;
+		T* result = new int;
 
 
 
 		if(id == 0){
 
-			result = values.at(id);
+			*result = values.at(id);
 
 		}
 
@@ -242,7 +242,7 @@ public:
 
 			for(TID i=0 ; i<=id ; i++){
 
-				result+=values.at(i);
+				*result+=values.at(i);
 
 			}
 
@@ -254,7 +254,7 @@ public:
 
 
 
-		return result;
+		return *result;
 
 	}
 
@@ -371,15 +371,10 @@ public:
 	template<class T>
 
 	T& DeltaCodingCompressedColumn<T>::operator[](int index){
-
-		T& t = index;
-
-		int key = this->decompress(index);
-
-		std::cout << "key : " << key;
-
-		return t;
-
+		//T& t = index;
+		return this->decompress(index);
+		//std::cout << "key : " << key;
+		//return t;
 	}
 
 
