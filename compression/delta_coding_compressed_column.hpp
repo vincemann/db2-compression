@@ -131,12 +131,6 @@ namespace CoGaDB {
 
     bool DeltaCodingCompressedColumn<T>::insert(const T &value) {
 
-        // (1. sortieren)
-
-        // 2. wenn keine vorherige zahl, dann zahl speichern ansonsten :
-
-        //    differenz zu vorherigen zahl speichern
-
         if (column_.getContent().empty()) {
 
             std::cout << std::endl << "Saving first entry: " << value << std::endl;
@@ -157,16 +151,6 @@ namespace CoGaDB {
             this->last_value_ = value;
 
         }
-
-
-
-        // write whole column
-
-        //std::cout << std::endl;
-
-        //for (long unsigned int i = 0; i < column_.size(); i++) {
-        //  std::cout << this->column_.getContent().at(i) << " , ";
-        //}
 
         std::cout << std::endl << "decompressed : " << decompress(column_.size() - 1) << " id : " << column_.size() - 1
                   << std::endl;
@@ -229,7 +213,6 @@ namespace CoGaDB {
     template<class T>
 
     const boost::any DeltaCodingCompressedColumn<T>::get(TID id) {
-        //std::cout << "return value from get : " << decompress(id) << std::endl;
         return decompress(id);
     }
 

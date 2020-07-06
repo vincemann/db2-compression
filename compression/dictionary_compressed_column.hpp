@@ -258,6 +258,7 @@ namespace CoGaDB {
     template<class T>
     bool DictionaryCompressedColumn<T>::clearContent() {
         this->insert_dict_.clear();
+        this->value_count_dict_.clear();
         this->at_dict_.clear();
         this->last_key_=0;
         return this->column_.clearContent();

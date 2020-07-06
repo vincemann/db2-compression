@@ -62,7 +62,6 @@ typedef CompressedColumn<std::string> CompressedStringColumn;
 
 /***************** Start of Implementation Section ******************/
 
-	//call super constructors of Column
 	template<class T>
 	CompressedColumn<T>::CompressedColumn(const std::string& name, AttributeType db_type) : ColumnBaseTyped<T>(name,db_type){
 
@@ -73,13 +72,11 @@ typedef CompressedColumn<std::string> CompressedStringColumn;
 
 	}
 
-	//@Override in Column
 	template<class T>
 	bool CompressedColumn<T>::isMaterialized() const  throw(){
 		return false;
 	}
 
-    //@Override in Column
 	template<class T>
 	bool CompressedColumn<T>::isCompressed() const  throw(){
 		return true;

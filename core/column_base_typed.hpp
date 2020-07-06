@@ -105,7 +105,6 @@ class ColumnBaseTyped : public ColumnBase{
 
 	}
 
-//static methods
 template<class T>
 const std::type_info& ColumnBaseTyped<T>::type() const throw(){
 	return typeid(T);

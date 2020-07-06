@@ -80,18 +80,6 @@ bool equals(std::vector<T> reference_data, boost::shared_ptr<ColumnBaseTyped<T> 
 	return true;
 }
 
-/*
- * Hier werden die tests ausgeführt.
- * col is filled with example (reference) data.
- * col_new is empty and is tested, and should look like col, after certian funcions are called when functions work as expected.
- *
- * Tests:
- * 0. Test if col (which is also my impl) was filled properly before calling this method via insert calls
- * 1. CopyContructor
- * 2. Update
- * 3. Delete
- * 4. Store/Load
- */
 template<class T>
 bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<ColumnBaseTyped<T> > col_new, std::vector<T>& reference_data) {
 	/****** BASIC INSERT TEST ******/
@@ -172,7 +160,6 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 		}
 
 		//boost::shared_ptr<Column<int> > col2 (new Column<int>("int column",INT));
-		//lädt automatisch die richtige example column aus data/
 		col_new->load("data/");
 
 		if (!equals(reference_data, col_new)) {
@@ -223,14 +210,6 @@ std::string  getAttributeString<std::string>(){
     return "string column";
 }
 
-/*
- * Assume ValueType is String and ColumnType is dictionary_compressed_column
- * Creates two dictionary_compressed_column with String values. (The only value type accepted by my impl dictionary_compressed_column)
- * Gib der Table name der zum Typ passt ("string-column").Gib Table den richtigen enum attribute type STRING.
- * Füll Col1 mit random example data.
- * call test_column mit noch leerer col2 und test data filled col1.
- *
- */
 template<template<typename> class ColumnType, typename ValueType>
 bool unittest() {
 
