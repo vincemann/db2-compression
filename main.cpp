@@ -13,8 +13,6 @@
 
 using namespace CoGaDB;
 
-// Column Typ muss einfach mit meiner Impl ausgetauscht werden -> beim ersten zb run_length_compressed_column
-// beim 3. zb dictionary_compressed_column
 int main(){
 	/*Adapt the Column to your implemented method*/
             std::cout <<"Dic: "<< std::endl;

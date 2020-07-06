@@ -200,6 +200,7 @@ namespace CoGaDB {
         std::vector <T> values = column_.getContent();
 
         T *result = new int;
+        *result = 0;
 
 
         if (id == 0) {
@@ -355,25 +356,54 @@ namespace CoGaDB {
     template<class T>
 
     bool DeltaCodingCompressedColumn<T>::clearContent() {
-        this->last_value_=0;
         return this->column_.clearContent();
     }
 
 
     template<class T>
 
-    bool DeltaCodingCompressedColumn<T>::store(const std::string &) {
+    bool DeltaCodingCompressedColumn<T>::store(const std::string &path_) {
+        std::string path(path_);
+        path += "/";
+        path += this->name_+"-meta";
+        //std::cout << "Writing Column " << this->getName() << " to File " << path << std::endl;
+        std::ofstream outfile (path.c_str(),std::ios_base::binary | std::ios_base::out);
+        boost::archive::binary_oarchive oa(outfile);
 
-        return false;
+        std::cout << "storing last_value_: " << last_value_ << std::endl;
+        std::cout << "before store: " << std::endl;
+        this->column_.print();
+        oa << last_value_;
 
+        outfile.flush();
+        outfile.close();
+        return this->column_.store(path_);
     }
 
     template<class T>
 
-    bool DeltaCodingCompressedColumn<T>::load(const std::string &) {
+    bool DeltaCodingCompressedColumn<T>::load(const std::string &path_) {
+        std::string path(path_);
+        //std::cout << "Loading column '" << this->name_ << "' from path '" << path << "'..." << std::endl;
+        //string path("data/");
+        path += "/";
+        path += this->name_+"-meta";
 
-        return false;
+        //std::cout << "Opening File '" << path << "'..." << std::endl;
+        std::ifstream infile (path.c_str(),std::ios_base::binary | std::ios_base::in);
+        boost::archive::binary_iarchive ia(infile);
 
+        ia >> last_value_;
+        std::cout << "loaded last_value_: " << last_value_ << std::endl;
+
+
+        infile.close();
+
+
+        bool loaded  = this->column_.load(path_);
+        std::cout << "after load: " << std::endl;
+        this->column_.print();
+        return loaded;
     }
 
 
