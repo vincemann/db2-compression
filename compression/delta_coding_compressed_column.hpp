@@ -265,35 +265,43 @@ namespace CoGaDB {
 
     bool DeltaCodingCompressedColumn<T>::update(TID id, const boost::any &newBoostValue) {
         T newValue = boost::any_cast<T>(newBoostValue);
+        this->column_.print();
         if (id == 0) {
-            T decompressedSucc = boost::any_cast<T>(this->get(id + 1));
-            T newSuccDelta = decompressedSucc - newValue;
+
             //update old first value with new first value
             if (!this->column_.update(0, newValue)) {
                 return false;
             }
             //adjust only first successor delta if present
             if (this->size() > 1){
+                T decompressedSucc = boost::any_cast<T>(this->get(id + 1));
+                T newSuccDelta = decompressedSucc - newValue;
                 if (!this->column_.update(1, newSuccDelta)) {
                     return false;
                 }
             }
         } else {
+            std::cout << "newValue: " << newValue << std::endl;
             T oldDelta = this->column_[id];
+            std::cout << "old delta: " << oldDelta << std::endl;
             T decompressedPreceding = boost::any_cast<T>(this->get(id - 1));
+            std::cout << "decompressedPreceding: " << decompressedPreceding << std::endl;
             T newDelta = newValue - decompressedPreceding;
+            std::cout << "newDelta: " << newDelta << std::endl;
             T updateDelta = newDelta - oldDelta;
+            std::cout << "updateDelta: " << updateDelta << std::endl;
             //update old delta with new delta
             if (!this->column_.update(id,newDelta)) {
                 return false;
             }
-            //adjust all succ deltas
-            for (long unsigned int i = id + 1; i < this->column_.size(); i++) {
-                if (!this->column_.update(i, this->column_[i] - updateDelta)) {
+            //adjust succ delta
+            //for (long unsigned int i = id + 1; i < this->column_.size(); i++) {
+                if (!this->column_.update(id+1, this->column_[id+1] - updateDelta)) {
                     return false;
                 }
-            }
+            //}
         }
+        this->column_.print();
 
         return true;
 

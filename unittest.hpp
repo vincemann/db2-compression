@@ -129,7 +129,6 @@ bool test_column(boost::shared_ptr<ColumnBaseTyped<T> > col, boost::shared_ptr<C
 	}	
 	std::cout << "SUCCESS"<< std::endl;
 	/****** UPDATE TEST ******/
-	//put random value at random valid index
 	TID tid = rand() % 100;
 	T new_value = get_rand_value<T>();
 	std::cout << "UPDATE TEST: Update value on Position '" << tid << "' to new value '" << new_value << "'..."; // << std::endl;
