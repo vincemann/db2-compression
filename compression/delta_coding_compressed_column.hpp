@@ -123,9 +123,7 @@ namespace CoGaDB {
     template<class T>
 
     bool DeltaCodingCompressedColumn<T>::insert(const boost::any &value) {
-
-        return this->column_.insert(value);
-
+        return this->column_.insert(boost::any_cast<T>(value));
     }
 
 
@@ -185,10 +183,12 @@ namespace CoGaDB {
 
     template<typename InputIterator>
 
-    bool DeltaCodingCompressedColumn<T>::insert(InputIterator, InputIterator) {
-
-
-        return true;
+    bool DeltaCodingCompressedColumn<T>::insert(InputIterator start, InputIterator end) {
+        bool inserted = true;
+        for (auto it = start; it != end; ++it) {
+            inserted = insert(*it);
+        }
+        return inserted;
 
     }
 
@@ -230,27 +230,21 @@ namespace CoGaDB {
     template<class T>
 
     const boost::any DeltaCodingCompressedColumn<T>::get(TID id) {
-
         std::cout << "return value from get : " << decompress(id) << std::endl;
-
         return decompress(id);
-
     }
 
 
     template<class T>
 
     void DeltaCodingCompressedColumn<T>::print() const throw() {
-
-
+        return column_.print();
     }
 
     template<class T>
 
     size_t DeltaCodingCompressedColumn<T>::size() const throw() {
-
         return column_.size();
-
     }
 
     template<class T>
@@ -272,8 +266,8 @@ namespace CoGaDB {
             if (!this->column_.update(0, newValue)) {
                 return false;
             }
-            //adjust only first successor delta if present
-            if (this->size() > 1){
+            //adjust successor delta if present
+            if (this->size() > 1) {
                 T decompressedSucc = boost::any_cast<T>(this->get(id + 1));
                 T newSuccDelta = decompressedSucc - newValue;
                 if (!this->column_.update(1, newSuccDelta)) {
@@ -291,15 +285,14 @@ namespace CoGaDB {
             T updateDelta = newDelta - oldDelta;
             std::cout << "updateDelta: " << updateDelta << std::endl;
             //update old delta with new delta
-            if (!this->column_.update(id,newDelta)) {
+            if (!this->column_.update(id, newDelta)) {
                 return false;
             }
             //adjust succ delta
-            //for (long unsigned int i = id + 1; i < this->column_.size(); i++) {
-                if (!this->column_.update(id+1, this->column_[id+1] - updateDelta)) {
-                    return false;
-                }
-            //}
+            if (!this->column_.update(id + 1, this->column_[id + 1] - updateDelta)) {
+                return false;
+            }
+
         }
         this->column_.print();
 
@@ -310,9 +303,14 @@ namespace CoGaDB {
 
     template<class T>
 
-    bool DeltaCodingCompressedColumn<T>::update(PositionListPtr, const boost::any &) {
-
-        return false;
+    bool DeltaCodingCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &value) {
+        if (value.empty() || typeid(T) != value.type()) {
+            return false;
+        }
+        for (auto it = ptr->begin(); it != ptr->end(); ++it) {
+            this->update(*it, value);
+        }
+        return true;
 
     }
 
@@ -320,27 +318,30 @@ namespace CoGaDB {
     template<class T>
 
     bool DeltaCodingCompressedColumn<T>::remove(TID) {
-
         return false;
-
     }
 
 
     template<class T>
 
-    bool DeltaCodingCompressedColumn<T>::remove(PositionListPtr) {
+    bool DeltaCodingCompressedColumn<T>::remove(PositionListPtr ptr) {
+        if (!ptr || ptr->empty()) {
+            return false;
+        }
 
-        return false;
+        for (PositionList::reverse_iterator rit = ptr->rbegin(); rit != ptr->rend(); ++rit) {
+            this->remove(*rit);
+        }
 
+        return true;
     }
 
 
     template<class T>
 
     bool DeltaCodingCompressedColumn<T>::clearContent() {
-
-        return false;
-
+        this->last_value_=0;
+        return this->column_.clearContent();
     }
 
 
@@ -364,19 +365,14 @@ namespace CoGaDB {
     template<class T>
 
     T &DeltaCodingCompressedColumn<T>::operator[](int index) {
-        //T& t = index;
         return this->decompress(index);
-        //std::cout << "key : " << key;
-        //return t;
     }
 
 
     template<class T>
 
     unsigned int DeltaCodingCompressedColumn<T>::getSizeinBytes() const throw() {
-
-        return 0; //return values_.capacity()*sizeof(T);
-
+        return this->column_.getSizeinBytes();
     }
 
 
