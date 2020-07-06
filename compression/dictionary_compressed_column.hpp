@@ -199,10 +199,14 @@ namespace CoGaDB {
     }
 
     template<class T>
-    bool DictionaryCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &patch) {
-        //todo add compression logic
-        std::cout << "weird iterator update function called " << std::endl;
-        return this->column_.update(ptr,patch);
+    bool DictionaryCompressedColumn<T>::update(PositionListPtr ptr, const boost::any &value) {
+        if (value.empty() || typeid(T) != value.type()) {
+            return false;
+        }
+        for (auto it = ptr->begin(); it != ptr->end(); ++it) {
+            this->update(*it, value);
+        }
+        return true;
     }
 
     template<class T>
@@ -212,7 +216,16 @@ namespace CoGaDB {
 
     template<class T>
     bool DictionaryCompressedColumn<T>::remove(PositionListPtr ptr) {
-        return this->column_.remove(ptr);
+        if (!ptr || ptr->empty()) {
+            return false;
+        }
+
+        for (PositionList::reverse_iterator rit = ptr->rbegin(); rit != ptr->rend(); ++rit) {
+            this->remove(*rit);
+        }
+
+        return true;
+
     }
 
     template<class T>
